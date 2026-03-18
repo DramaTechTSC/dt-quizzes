@@ -1,26 +1,19 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import "tailwindcss";
+@plugin './hero.ts';
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-body: var(--font-lato);
+  --font-heading: var(--font-playfair-display);
+  --font-title: var(--font-playfair-display-sc);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  h1 { @apply font-title text-3xl md:text-5xl; }
+  h2 { @apply font-title text-2xl md:text-4xl; }
+  h3 { @apply font-heading text-xl md:text-3xl; }
+  h4 { @apply font-heading text-lg md:text-2xl; }
+  h5 { @apply font-bold text-base md:text-xl; }
+  h6 { @apply font-bold text-base md:text-lg; }
 }

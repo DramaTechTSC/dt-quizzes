@@ -56,12 +56,18 @@ export default function Form({ quiz, section, questions, back, next, complete })
       answers.push(...part.values);
     }
 
-    fetch(`/api/${quiz}/complete`, {
-      method: 'POST',
-      body: JSON.stringify(answers),
-      headers: { 'Content-Type': 'application/json' }
-    }).then(res => res.json().then((json) => {
-      router.push(next + (json.correct ? ('?code=' + json.code) : ''));
+    fetch('/api/token').then((response) => response.json().then(({ token }) => {
+      fetch(`/api/${quiz}/complete`, {
+        method: 'POST',
+        body: JSON.stringify(answers),
+        headers: { 'Content-Type': 'application/json' }
+      }).then(res => {
+        if (res.status === 200) {
+          res.json().then((json) => {
+            router.push(next + (json.correct ? ('?code=' + json.code) : ''));
+          });
+        }
+      });
     }));
   }
 

@@ -1,8 +1,11 @@
 import clientPromise from "@/lib/mongo";
 import digest from '@/lib/hash';
 import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
 
 export async function POST(req, { params }) {
+  const cookieStore = await cookies();
+
   const body = await req.json();
   const { quiz } = await params;
 
@@ -23,13 +26,28 @@ export async function POST(req, { params }) {
 
   for (let i = 0; i < answers.length; i++) {
     if (answers[i] !== Number(body[i])) {
-      return Response.json({ correct: false })
+      return Response.json({ ok: true, correct: false })
     }
   }
 
   const codes = client.db('quiz').collection('codes');
-  const result = await codes.insertOne({ quiz: new ObjectId(quiz) });
+
+  const token = cookieStore.get('token');
+  if (!token || !token.value) {
+    return Response.json({ error: 'You must request a device token before submitting' }, { status: 401 });
+  }
+
+  const raw = req.headers.get('user-agent') + req.headers.get('accept-language');
+  const fingerprint = await digest(raw);
+
+  const existing = await codes.findOne({ quiz: new ObjectId(quiz), token });
+  if (existing) {
+    const code = await digest(existing._id.toString());
+    return Response.json({ ok: true, correct: true, code });
+  }
+
+  const result = await codes.insertOne({ quiz: new ObjectId(quiz), token: token.value, fingerprint });
   const code = await digest(result.insertedId.toString());
 
-  return Response.json({ correct: true, code });
+  return Response.json({ ok: true, correct: true, code });
 }
